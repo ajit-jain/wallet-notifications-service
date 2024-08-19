@@ -31,10 +31,10 @@ $ npm run test:cov
 
 ## Extensibility of the service to handle multiple EVM chains depend on 
 
-- To enable airdrops for a new chain, three configuration updates are required:
-   First, add EVM Chain name in `SUPPORTED_EVM_CHAINS_FOR_AIRDROP` in `src/domains/constants/evm.constants.ts`
-   Second, add the EVM chain name and URL to the `evmChainUrlMap` in `src/domains/wallet/wallet.config.ts`. 
-   Next, add the airdrop configuration for the EVM chain in `domains/wallet/airdrop.config.ts`.
+To enable airdrops for a new chain, three configuration updates are required:
+- First, add EVM Chain name in `SUPPORTED_EVM_CHAINS_FOR_AIRDROP` in `src/domains/constants/evm.constants.ts`
+- Second, add the EVM chain name and URL to the `evmChainUrlMap` in `src/domains/wallet/wallet.config.ts`. 
+- Next, add the airdrop configuration for the EVM chain in `domains/wallet/airdrop.config.ts`.
 
 
 ## Design practices
