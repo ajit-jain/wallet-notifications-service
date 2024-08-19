@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { WebhookTransaction, WebhookWalletUpdates } from '../dtos/webhook-wallet-updates.dto';
 import { EVM_CHAIN_CODE_NAME_MAP, SUPPORTED_EVM_CHAINS_FOR_AIRDROP } from '../constants/evm.constants';
 import { PrivateKeyCredentials } from './../../../integrations/evms/types/evm.crendentions.type';
@@ -14,6 +14,7 @@ import { EVMChainAirdropSettingsNotConfigured, EVMChainUrlNotConfigured } from '
 import { TransactionReceiptDto } from 'src/integrations/evms/clients/dtos/transaction-receipt.type';
 @Injectable()
 export class WalletService implements WalletServiceInterface {
+    private readonly logger = new Logger('WalletService'); 
     constructor(
         @Inject(walletConfig.KEY)
         private readonly walletConfiguration: ConfigType<typeof walletConfig>,
@@ -33,18 +34,16 @@ export class WalletService implements WalletServiceInterface {
     async fundEligibleWalletByAirdrop(walletUpdates: WebhookWalletUpdates) {
         const { chainId, confirmed } = walletUpdates;
         const chainName = EVM_CHAIN_CODE_NAME_MAP[chainId];
-        console.log("Chain Name:", chainName);
 
         const chainUrl = this.walletConfiguration.evmChainUrlMap[chainName];
         if(!chainUrl) {
             throw new EVMChainUrlNotConfigured()
         }
-        console.log("Chain URL:",chainUrl);
 
         const airdropConfig = this.airdropConfiguration[chainName];
-
         // Webhook will send two events for a single trasaction, it is used to avoid double transactions.
         if (!confirmed) {
+            this.logger.log(`Airdrop config for ${chainName} with url ${chainUrl}: ${JSON.stringify(airdropConfig)}`);
             await this.updateWalletIfBalanceIsLow(walletUpdates.txs, new Web3HttpClient(chainUrl), airdropConfig);
         }
     }
@@ -60,7 +59,7 @@ export class WalletService implements WalletServiceInterface {
         const fromAccountAddress = await this.getDefaultAccountAddress(client, fromAccountCredentials.privateKey);
 
         for(let walletAddress of walletsWithLowBalance) {
-            console.log(`Wallet ${walletAddress} below threshold. Airdropping.`);
+            this.logger.log(`Wallet ${walletAddress} below threshold. Airdropping from ${fromAccountAddress}`);
             await this.sendAirdrop(fromAccountAddress,walletAddress,client,fromAccountCredentials, airdropConfig);
         }
     }
@@ -74,10 +73,9 @@ export class WalletService implements WalletServiceInterface {
         const walletsWithLowBalance = [];
 
         for (const transaction of transactions) {
-            const balance = await client.getBalance(transaction.fromAddress, 'ether');
-    
-            console.log("Balance and config: ",airdropConfig, balance);
-            if (parseFloat(balance) < airdropConfig.threshold) {
+            const accountBalance = await client.getBalance(transaction.fromAddress, 'ether');
+            this.logger.debug(`Balance for account with address ${transaction.fromAddress}: ${accountBalance}`)
+            if (parseFloat(accountBalance) < airdropConfig.threshold) {
                 walletsWithLowBalance.push(transaction.fromAddress);
             }
         }

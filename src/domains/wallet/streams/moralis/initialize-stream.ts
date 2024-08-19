@@ -1,7 +1,9 @@
 
+import { Logger } from '@nestjs/common';
 import { EVM_CHAIN_CODE_NAME_MAP } from '../../constants/evm.constants';
 import Moralis from 'moralis';
 export const initialize =  async () => {
+    let logger = new Logger('Initialise stream');
     try {
         await Moralis.start({
             apiKey: process.env.MORALIS_API_KEY
@@ -18,12 +20,15 @@ export const initialize =  async () => {
 
         const streamId = response.toJSON().id;
     
+        const addresses = [process.env.MORALIS_ADD_STREAM_ADDRESS]
         await Moralis.Streams.addAddress({
             id: streamId,
-            address: [process.env.MORALIS_ADD_STREAM_ADDRESS],
+            address: addresses,
         });
-        console.log("Stream API added");
+
+        logger.log(`Stream API added for addresses: ${addresses}`);
+
     } catch(e) {
-        console.error(e);
+        logger.error(e);
     }
 }

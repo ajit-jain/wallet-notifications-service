@@ -4,10 +4,12 @@ import { AccountInfoDto } from "./dtos/account-info.type";
 import { EVMTransaction } from "../types/evm.transaction.type";
 import { PrivateKeyCredentials } from "../types/evm.crendentions.type";
 import { TransactionReceiptDto } from "./dtos/transaction-receipt.type";
+import { Logger } from "@nestjs/common";
 
 
 export class Web3HttpClient implements EVMClient {
-    readonly client: Web3;
+    private readonly logger = new Logger('WebHttpClient');
+    private readonly client: Web3;
     constructor(rpcUrl: string) {
         this.client = new Web3(new Web3.providers.HttpProvider(rpcUrl));
     }
@@ -25,7 +27,7 @@ export class Web3HttpClient implements EVMClient {
     async sendTransaction(transaction: EVMTransaction, credentials: PrivateKeyCredentials): Promise<TransactionReceiptDto> {
         const signedTx = await this.client.eth.accounts.signTransaction(transaction, credentials.privateKey);
         const receipt = await this.client.eth.sendSignedTransaction(signedTx.rawTransaction);
-        console.log(`Airdrop sent to ${transaction.to}: ${receipt.transactionHash}`);
+        this.logger.log(`Airdrop of value ${transaction.value} is sent to ${transaction.to} from ${transaction.from}. \nReceipt: ${receipt.transactionHash}`);
         return new TransactionReceiptDto(receipt.transactionHash.toString());
     }
 }
