@@ -9,7 +9,7 @@ $ npm install
 ```
 
 ## Running the app
-Make that `.env` file is added. It will have all the configurations to run the application. Copy contents for .env.example file and replace with your credentials.
+Make sure that `.env` file is added. It will have all the configurations to run the application. Copy contents for .env.example file and replace with your credentials.
 
 ```bash
 # development
