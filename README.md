@@ -39,7 +39,7 @@ Stop the containers
 ```shell
 $ make stop
 ```
-##
+## Important Note to receive webhooks
 To subscribe to events, you first need to add the Moralis Stream API, where you'll specify a webhook URL that points to your local system. 
 
 To create a webhook for your local system, follow these steps:
