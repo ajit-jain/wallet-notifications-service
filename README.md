@@ -17,16 +17,6 @@ $ npm run start
 
 # watch mode
 $ npm run start:dev
-
-
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# test coverage
-$ npm run test:cov
 ```
 
 ## Running containerised app
@@ -45,6 +35,18 @@ $ make start
 Stop the containers
 ```shell
 $ make stop
+```
+
+Server will start at http://localhost:3000/
+
+## Test
+
+```bash
+# unit tests
+$ npm run test
+
+# test coverage
+$ npm run test:cov
 ```
 
 ## Extensibility of the service to handle multiple EVM chains depend on 
