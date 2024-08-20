@@ -72,66 +72,66 @@ describe('WalletService', () => {
   });
 
   describe('handleWalletNotifications', () => {
-    it('should not trigger updateWalletIfBalanceIsLow when passed chain id is supported for airdrop', async () => {
+    it('should not trigger airdropTokenForEligibleWallets when passed chain id is supported for airdrop', async () => {
       const walletUpdates = {
         chainId: '0000000000000',
         confirmed: false,
         txs: [],
       };
-      const fundEligibleWalletByAirdropSpy = jest
-        .spyOn(walletService, 'fundEligibleWalletByAirdrop')
+      const processNotificationForAirdropFundsSpy = jest
+        .spyOn(walletService, 'processNotificationForAirdropFunds')
         .mockResolvedValueOnce(undefined);
 
       await walletService.handleWalletNotifications(walletUpdates);
-      expect(fundEligibleWalletByAirdropSpy).toHaveBeenCalledTimes(0);
+      expect(processNotificationForAirdropFundsSpy).toHaveBeenCalledTimes(0);
     });
 
-    it('should trigger updateWalletIfBalanceIsLow when passed chain id is supported for airdrop', async () => {
+    it('should trigger airdropTokenForEligibleWallets when passed chain id is supported for airdrop', async () => {
       const walletUpdates = {
         chainId: EVM_CHAIN_NAME_CODE_MAP[EVM_CHAINS.BASE_MAINNET],
         confirmed: false,
         txs: [],
       };
-      const fundEligibleWalletByAirdropSpy = jest
-        .spyOn(walletService, 'fundEligibleWalletByAirdrop')
+      const processNotificationForAirdropFundsSpy = jest
+        .spyOn(walletService, 'processNotificationForAirdropFunds')
         .mockResolvedValueOnce(undefined);
 
       await walletService.handleWalletNotifications(walletUpdates);
-      expect(fundEligibleWalletByAirdropSpy).toHaveBeenCalledTimes(1);
+      expect(processNotificationForAirdropFundsSpy).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe('fundEligibleWalletByAirdrop', () => {
-    it('should not trigger updateWalletIfBalanceIsLow if wallet update is confirmed', async () => {
+  describe('processNotificationForAirdropFunds', () => {
+    it('should not trigger airdropTokenForEligibleWallets if wallet update is confirmed', async () => {
       const walletUpdates = {
         chainId: EVM_CHAIN_NAME_CODE_MAP[EVM_CHAINS.BASE_MAINNET],
         confirmed: true,
         txs: [],
       };
 
-      const updateWalletIfBalanceIsLowSpy = jest
-        .spyOn(walletService, 'updateWalletIfBalanceIsLow')
+      const airdropTokenForEligibleWalletsSpy = jest
+        .spyOn(walletService, 'airdropTokenForEligibleWallets')
         .mockResolvedValueOnce(undefined);
 
-      await walletService.fundEligibleWalletByAirdrop(walletUpdates);
+      await walletService.processNotificationForAirdropFunds(walletUpdates);
 
-      expect(updateWalletIfBalanceIsLowSpy).toHaveBeenCalledTimes(0);
+      expect(airdropTokenForEligibleWalletsSpy).toHaveBeenCalledTimes(0);
     });
 
-    it('should trigger updateWalletIfBalanceIsLow if wallet update is not confirmed', async () => {
+    it('should trigger airdropTokenForEligibleWallets if wallet update is not confirmed', async () => {
       const walletUpdates = {
         chainId: EVM_CHAIN_NAME_CODE_MAP[EVM_CHAINS.BASE_MAINNET],
         confirmed: false,
         txs: [],
       };
 
-      const updateWalletIfBalanceIsLowSpy = jest
-        .spyOn(walletService, 'updateWalletIfBalanceIsLow')
+      const airdropTokenForEligibleWalletsSpy = jest
+        .spyOn(walletService, 'airdropTokenForEligibleWallets')
         .mockResolvedValueOnce(undefined);
 
-      await walletService.fundEligibleWalletByAirdrop(walletUpdates);
+      await walletService.processNotificationForAirdropFunds(walletUpdates);
 
-      expect(updateWalletIfBalanceIsLowSpy).toHaveBeenCalledTimes(1);
+      expect(airdropTokenForEligibleWalletsSpy).toHaveBeenCalledTimes(1);
     });
 
     it('should throw error when chain url not exists', async () => {
@@ -141,40 +141,40 @@ describe('WalletService', () => {
         txs: [],
       };
 
-      const updateWalletIfBalanceIsLowSpy = jest
-        .spyOn(walletService, 'updateWalletIfBalanceIsLow')
+      const airdropTokenForEligibleWalletsSpy = jest
+        .spyOn(walletService, 'airdropTokenForEligibleWallets')
         .mockResolvedValueOnce(undefined);
 
       await expect(
-        walletService.fundEligibleWalletByAirdrop(walletUpdates),
+        walletService.processNotificationForAirdropFunds(walletUpdates),
       ).rejects.toThrow(new EVMChainUrlNotConfigured());
 
-      expect(updateWalletIfBalanceIsLowSpy).toHaveBeenCalledTimes(0);
+      expect(airdropTokenForEligibleWalletsSpy).toHaveBeenCalledTimes(0);
     });
 
-    it('should throw error when updateWalletIfBalanceIsLow rejects', async () => {
+    it('should throw error when airdropTokenForEligibleWallets rejects', async () => {
       const walletUpdates = {
         chainId: EVM_CHAIN_NAME_CODE_MAP[EVM_CHAINS.BASE_MAINNET],
         confirmed: false,
         txs: [],
       };
       const error = new Error('Something went wrong');
-      const updateWalletIfBalanceIsLowSpy = jest
-        .spyOn(walletService, 'updateWalletIfBalanceIsLow')
+      const airdropTokenForEligibleWalletsSpy = jest
+        .spyOn(walletService, 'airdropTokenForEligibleWallets')
         .mockRejectedValueOnce(error);
 
       await expect(
-        walletService.fundEligibleWalletByAirdrop(walletUpdates),
+        walletService.processNotificationForAirdropFunds(walletUpdates),
       ).rejects.toThrow(error);
 
-      expect(updateWalletIfBalanceIsLowSpy).toHaveBeenCalledTimes(1);
+      expect(airdropTokenForEligibleWalletsSpy).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe('updateWalletIfBalanceIsLow', () => {
+  describe('airdropTokenForEligibleWallets', () => {
     it('should throw an error when airdrop settings is not configured', async () => {
       await expect(
-        walletService.updateWalletIfBalanceIsLow(
+        walletService.airdropTokenForEligibleWallets(
           [],
           new Web3HttpClient('mockUrl'),
           undefined as any,
@@ -189,10 +189,10 @@ describe('WalletService', () => {
       const getDefaultAccountAddressSpy = jest
         .spyOn(walletService, 'getDefaultAccountAddress')
         .mockResolvedValueOnce('defaultAddress');
-      const sendAirdrop = jest
-        .spyOn(walletService, 'sendAirdrop')
+      const creditWallet = jest
+        .spyOn(walletService, 'creditWallet')
         .mockResolvedValueOnce(undefined);
-      const result = await walletService.updateWalletIfBalanceIsLow(
+      const result = await walletService.airdropTokenForEligibleWallets(
         [],
         new Web3HttpClient('mockUrl'),
         mockAirdropConfig[EVM_CHAINS.BASE_MAINNET],
@@ -203,20 +203,20 @@ describe('WalletService', () => {
       expect(getWalletsWithLowBalanceByTransactionsSpy).toHaveBeenCalledTimes(
         1,
       );
-      expect(sendAirdrop).toHaveBeenCalledTimes(0);
+      expect(creditWallet).toHaveBeenCalledTimes(0);
     });
 
-    it('should trigger sendAirdrop when there is no errors', async () => {
+    it('should trigger creditWallet when there is no errors', async () => {
       const getWalletsWithLowBalanceByTransactionsSpy = jest
         .spyOn(walletService, 'getWalletsWithLowBalanceByTransactions')
         .mockResolvedValueOnce(['testAddress']);
       const getDefaultAccountAddressSpy = jest
         .spyOn(walletService, 'getDefaultAccountAddress')
         .mockResolvedValueOnce('defaultAddress');
-      const sendAirdrop = jest
-        .spyOn(walletService, 'sendAirdrop')
+      const creditWallet = jest
+        .spyOn(walletService, 'creditWallet')
         .mockResolvedValueOnce(undefined);
-      const result = await walletService.updateWalletIfBalanceIsLow(
+      const result = await walletService.airdropTokenForEligibleWallets(
         [],
         new Web3HttpClient('mockUrl'),
         mockAirdropConfig[EVM_CHAINS.BASE_MAINNET],
@@ -227,7 +227,7 @@ describe('WalletService', () => {
       expect(getWalletsWithLowBalanceByTransactionsSpy).toHaveBeenCalledTimes(
         1,
       );
-      expect(sendAirdrop).toHaveBeenCalledTimes(1);
+      expect(creditWallet).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -293,7 +293,7 @@ describe('WalletService', () => {
     });
   });
 
-  describe('sendAirdrop', () => {
+  describe('creditWallet', () => {
     it('return transaction on successful transaction', async () => {
       const transactionReceiptDto = new TransactionReceiptDto(
         '0xhdhddhd',
@@ -306,7 +306,7 @@ describe('WalletService', () => {
       jest
         .spyOn(client, 'sendTransaction')
         .mockResolvedValueOnce(transactionReceiptDto);
-      const result = await walletService.sendAirdrop(
+      const result = await walletService.creditWallet(
         'defaultAddress',
         'testAddress',
         client,
@@ -321,7 +321,7 @@ describe('WalletService', () => {
       const client = new Web3HttpClient('mockUrl');
       jest.spyOn(client, 'sendTransaction').mockRejectedValueOnce(error);
       await expect(
-        walletService.sendAirdrop(
+        walletService.creditWallet(
           'defaultAddress',
           'testAddress',
           client,

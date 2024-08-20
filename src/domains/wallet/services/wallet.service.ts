@@ -45,7 +45,7 @@ export class WalletService implements WalletServiceInterface {
         EVM_CHAIN_CODE_NAME_MAP[walletUpdates.chainId],
       )
     ) {
-      await this.fundEligibleWalletByAirdrop(walletUpdates);
+      await this.processNotificationForAirdropFunds(walletUpdates);
     }
 
     //..implement other functionalities if same webhook is used for multiple use cases
@@ -55,7 +55,9 @@ export class WalletService implements WalletServiceInterface {
     return this.airdropTransactionRepository.find();
   }
 
-  async fundEligibleWalletByAirdrop(walletUpdates: WebhookWalletUpdates) {
+  async processNotificationForAirdropFunds(
+    walletUpdates: WebhookWalletUpdates,
+  ) {
     const { chainId, confirmed } = walletUpdates;
     const chainName = EVM_CHAIN_CODE_NAME_MAP[chainId];
 
@@ -70,7 +72,7 @@ export class WalletService implements WalletServiceInterface {
       this.logger.log(
         `Airdrop config for ${chainName} with url ${chainUrl}: ${JSON.stringify(airdropConfig)}`,
       );
-      await this.updateWalletIfBalanceIsLow(
+      await this.airdropTokenForEligibleWallets(
         walletUpdates.txs,
         new Web3HttpClient(chainUrl),
         airdropConfig,
@@ -78,7 +80,7 @@ export class WalletService implements WalletServiceInterface {
     }
   }
 
-  async updateWalletIfBalanceIsLow(
+  async airdropTokenForEligibleWallets(
     transactions: WebhookTransaction[],
     client: EVMClient,
     airdropConfig: EVMAirdropConfiguration,
@@ -107,7 +109,7 @@ export class WalletService implements WalletServiceInterface {
         `Wallet ${walletAddress} below threshold. Airdropping from ${fromAccountAddress}`,
       );
 
-      await this.sendAirdrop(
+      await this.creditWallet(
         fromAccountAddress,
         walletAddress,
         client,
@@ -148,7 +150,7 @@ export class WalletService implements WalletServiceInterface {
     return walletsWithLowBalance;
   }
 
-  async sendAirdrop(
+  async creditWallet(
     fromAccountAddress: string,
     toAccountAddress: string,
     client: EVMClient,
