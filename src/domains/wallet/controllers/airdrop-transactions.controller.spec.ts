@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { WebhooksController } from './webhooks.controller';
 import { IntegrationsModule } from './../../../integrations/integrations.module';
 import { ConfigModule } from '@nestjs/config';
 import walletConfig from '../config/wallet.config';
@@ -9,20 +8,18 @@ import {
   WALLET_SERVICE_TOKEN,
 } from '../constants/wallet.constants';
 import { WalletServiceMock } from './../../../../test/mocks/services/wallet.service.mock';
-import { WalletServiceInterface } from '../services/wallet.service.interface';
+import { WalletServiceInterface } from './../services/wallet.service.interface';
 import * as request from 'supertest';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { AirdropTransactionRepositoryMock } from './../../../../test/mocks/repositories/airdrop-transaction.repository';
+import { AirdropTransactionEntityMock } from './../../../../test/mocks/entities/airdrop-transaction.entity.mock';
+import { GetAirdropTransactionsResponse } from '../dtos/get-airdrop-transactions.response.dto';
+import { AirdropTransactionsController } from './airdrop-transactions.controller';
 
-describe('WebhooksController', () => {
-  let webhooksController: WebhooksController;
+describe('AirdropTransactionsController', () => {
+  let airdropTransactionsController: AirdropTransactionsController;
   let walletService: jest.Mocked<WalletServiceInterface>;
   let app: INestApplication;
-  const requestBody = {
-    confirmed: false,
-    chainId: '0x2105',
-    txs: [{ fromAddress: 'Oxrandom-address' }],
-  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -31,7 +28,7 @@ describe('WebhooksController', () => {
         ConfigModule.forFeature(walletConfig),
         ConfigModule.forFeature(airdropConfig),
       ],
-      controllers: [WebhooksController],
+      controllers: [AirdropTransactionsController],
       providers: [
         {
           provide: WALLET_SERVICE_TOKEN,
@@ -44,7 +41,9 @@ describe('WebhooksController', () => {
       ],
     }).compile();
 
-    webhooksController = module.get<WebhooksController>(WebhooksController);
+    airdropTransactionsController = module.get<AirdropTransactionsController>(
+      AirdropTransactionsController,
+    );
     walletService =
       module.get<jest.Mocked<WalletServiceInterface>>(WALLET_SERVICE_TOKEN);
     app = module.createNestApplication();
@@ -52,51 +51,50 @@ describe('WebhooksController', () => {
   });
 
   it('should be defined', () => {
-    expect(webhooksController).toBeDefined();
+    expect(airdropTransactionsController).toBeDefined();
   });
 
-  describe('handleWalletNotifications', () => {
-    it('should call handleWalletNotifications on the wallet service and return success message', async () => {
-      const mockRequest = {
-        body: requestBody,
-      };
-
-      const result = await webhooksController.handleWalletNotifications(
-        mockRequest as any,
-      );
-
-      expect(walletService.handleWalletNotifications).toHaveBeenCalledWith(
-        mockRequest.body,
-      );
-      expect(result).toEqual({ data: 'webhook processed successfully.' });
-    });
-  });
-
-  describe('POST /wallet-notifications', () => {
+  describe('GET /airdrop-transactions', () => {
     it('should 200 when valid request is passed', () => {
+      walletService.getAirdropTransactions.mockResolvedValueOnce([]);
+
       return request(app.getHttpServer())
-        .post('/webhooks/wallet-notifications')
+        .get('/airdrop-transactions')
         .expect(HttpStatus.OK);
     });
 
-    it('should 200 when valid body is passed', () => {
+    it('should 200 and empty transactions array', () => {
+      walletService.getAirdropTransactions.mockResolvedValueOnce([]);
       return request(app.getHttpServer())
-        .post('/webhooks/wallet-notifications')
-        .send(requestBody)
+        .get('/airdrop-transactions')
         .expect((res: Response) => {
           expect(res.status).toEqual(HttpStatus.OK);
-          expect(res.body).toEqual({ data: 'webhook processed successfully.' });
+          expect(res.body).toEqual([]);
         });
     });
 
-    it('should 400 when handle wallet notifications throws an error', () => {
-      const error = new Error('Something went wrong');
-      walletService.handleWalletNotifications.mockRejectedValue(error);
+    it('should 200 and transactions array', () => {
+      const airdropTransactionEntity = AirdropTransactionEntityMock.generate(
+        '0.003',
+        null,
+      );
+      walletService.getAirdropTransactions.mockResolvedValueOnce([
+        airdropTransactionEntity,
+      ]);
+
       return request(app.getHttpServer())
-        .post('/webhooks/wallet-notifications')
-        .send(requestBody)
+        .get('/airdrop-transactions')
         .expect((res: Response) => {
-          expect(res.status).toEqual(HttpStatus.INTERNAL_SERVER_ERROR);
+          expect(res.status).toEqual(HttpStatus.OK);
+          expect(res.body).toEqual([
+            new GetAirdropTransactionsResponse(
+              airdropTransactionEntity.fromAddress,
+              airdropTransactionEntity.toAddress,
+              airdropTransactionEntity.amount,
+              airdropTransactionEntity.transactionHash,
+              airdropTransactionEntity.error,
+            ),
+          ]);
         });
     });
   });

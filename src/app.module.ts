@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { WalletModule } from './domains/wallet/wallet.module';
-import { ThrottlerGuard, ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { CoreModule } from './core/core.module';
 import appConfig from './app.config';
@@ -24,7 +24,7 @@ import appConfig from './app.config';
             ttl: config.get('app.throttle.ttl'),
             limit: config.get('app.throttle.limit'),
           },
-        ]
+        ];
       },
     }),
     CoreModule,
@@ -34,8 +34,8 @@ import appConfig from './app.config';
     AppService,
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard
-    }
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

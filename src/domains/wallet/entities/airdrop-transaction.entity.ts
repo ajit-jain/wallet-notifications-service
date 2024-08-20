@@ -1,26 +1,26 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity({ name: 'airdrop_transactions'})
+@Entity({ name: 'airdrop_transactions' })
 export class AirdropTransactionEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string; 
+  id: string;
 
-  @Column({type: 'text'})
+  @Column({ type: 'text' })
   fromAddress: string;
 
-  @Column({type: 'text'})
+  @Column({ type: 'text' })
   toAddress: string;
 
-  @Column({type: 'text'})
+  @Column({ type: 'text' })
   gasUsed: string;
 
-  @Column({type: 'text'})
+  @Column({ type: 'text' })
   gasPriceUsed: string;
 
-  @Column({type: 'text'})
+  @Column({ type: 'text' })
   amount: string;
 
-  @Column({type: 'text', nullable: true})
+  @Column({ type: 'text', nullable: true })
   transactionHash: string;
 
   @Column({ type: 'jsonb', nullable: true })

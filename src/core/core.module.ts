@@ -2,6 +2,6 @@ import { Module } from '@nestjs/common';
 import { OrmModule } from './orm/orm.module';
 
 @Module({
-  imports: [OrmModule]
+  imports: [OrmModule],
 })
 export class CoreModule {}
