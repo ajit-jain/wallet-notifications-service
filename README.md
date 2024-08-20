@@ -42,7 +42,7 @@ $ make stop
 
 
 ## Running the app without containerization
-Make sure you have postgres db installed in the system. 
+"Ensure that the PostgreSQL database is installed and running on your system."
 
 ```bash
 $ npm install
@@ -60,7 +60,7 @@ After running the `npm run start:dev`, run db migrate command in a new terminal.
 ```shell
 $ npm run typeorm migration:run
 ```
-**Note:** Server should be in running state while running this command.
+**Note:** Server should be in the running state while running this command.
 
 
 ## Test
