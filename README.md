@@ -1,6 +1,6 @@
 ## Description
 
-The wallet notifications service subscribes to open wallet transactions for specific users and processes those events, triggering airdrops if users have low balances.
+The wallet notifications service subscribes to open wallet transactions for specific users and processes those events, triggering airdrops if users have low balance.
 
 ## Prerequisites
 Make sure that `.env` file is added. It will have all the configurations to run the application. Copy contents for .env.example file and replace with your credentials.
@@ -39,7 +39,13 @@ Stop the containers
 ```shell
 $ make stop
 ```
+##
+To subscribe to events, you first need to add the Moralis Stream API, where you'll specify a webhook URL that points to your local system. 
 
+To create a webhook for your local system, follow these steps:
+- Use ngrok to expose your localhost to the internet.
+- After obtaining the ngrok URL for your server, create a webhook URL in the format: `your-ngrok-url/webhooks/wallet-notifications`.
+- Once you've created the stream with the webhook URL and added the relevant addresses, you'll start receiving Moralis events on your system.
 
 ## Running the app without containerization
 "Ensure that the PostgreSQL database is installed and running on your system."
