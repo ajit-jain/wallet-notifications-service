@@ -29,6 +29,24 @@ $ npm run test
 $ npm run test:cov
 ```
 
+## Running containerised app
+
+Make sure docker and docker-compose installed on your server. 
+
+Build docker images by running
+```shell
+$ make init
+```
+
+Start the containers
+```shell
+$ make start
+```
+Stop the containers
+```shell
+$ make stop
+```
+
 ## Extensibility of the service to handle multiple EVM chains depend on 
 
 To enable airdrops for a new chain, three configuration updates are required:
