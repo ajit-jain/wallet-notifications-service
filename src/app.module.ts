@@ -6,6 +6,7 @@ import { IntegrationsModule } from './integrations/integrations.module';
 import { WalletModule } from './domains/wallet/wallet.module';
 import { ThrottlerGuard, ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { CoreModule } from './core/core.module';
 import appConfig from './app.config';
 
 @Module({
@@ -26,6 +27,7 @@ import appConfig from './app.config';
         ]
       },
     }),
+    CoreModule,
   ],
   controllers: [AppController],
   providers: [

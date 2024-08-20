@@ -1,6 +1,19 @@
 version: '3.7'
 
 services:
+  notifications-db:
+    image: postgres:16.3-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    env_file: .env
+    container_name: notifications-db
+    volumes:
+      - db:/var/lib/postgresql/data
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+
   wallet-notifications-service:
     build:
       context: .
@@ -11,3 +24,8 @@ services:
       - .:/opt/app
       - /opt/app/node_modules
     command: npm run start:dev
+    depends_on:
+      - notifications-db
+volumes:
+  db:
+    driver: local

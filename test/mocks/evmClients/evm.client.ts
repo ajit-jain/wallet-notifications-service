@@ -1,4 +1,4 @@
-import { EVMClient } from "src/integrations/evms/clients/evm-client.interface";
+import { EVMClient } from  './../../../src/integrations/evms/clients/evm-client.interface';
 
 export const EVMClientMock = (): jest.Mocked<EVMClient> => {
     return {

@@ -11,7 +11,12 @@ import { ConfigType } from '@nestjs/config';
 import airdropConfig from '../config/airdrop.config';
 import { WalletServiceInterface } from './wallet.service.interface';
 import { EVMChainAirdropSettingsNotConfigured, EVMChainUrlNotConfigured } from '../expections/wallet.exceptions';
-import { TransactionReceiptDto } from 'src/integrations/evms/clients/dtos/transaction-receipt.type';
+import { TransactionReceiptDto } from './../../../integrations/evms/clients/dtos/transaction-receipt.type';
+import { inspect } from 'util';
+import { AIRDROP_TRANSACTION_REPOSITORY_TOKEN } from '../constants/wallet.constants';
+import { AirdropTransactionRepositoryInterface } from '../repositories/airdrop-transaction.repository.interface';
+import { AirdropTransactionEntityFactory } from '../factories/airdrop-transaction-entity.factory';
+
 @Injectable()
 export class WalletService implements WalletServiceInterface {
     private readonly logger = new Logger('WalletService'); 
@@ -20,6 +25,8 @@ export class WalletService implements WalletServiceInterface {
         private readonly walletConfiguration: ConfigType<typeof walletConfig>,
         @Inject(airdropConfig.KEY)
         private readonly airdropConfiguration: ConfigType<typeof airdropConfig>,
+        @Inject(AIRDROP_TRANSACTION_REPOSITORY_TOKEN)
+        private readonly airdropTransactionRepository: AirdropTransactionRepositoryInterface,
       ) {}
     
     async handleWalletNotifications(walletUpdates: WebhookWalletUpdates) {
@@ -49,6 +56,7 @@ export class WalletService implements WalletServiceInterface {
     }
 
     async updateWalletIfBalanceIsLow(transactions: WebhookTransaction[], client: EVMClient, airdropConfig: EVMAirdropConfiguration) {
+        
         if(!airdropConfig) {
             throw new EVMChainAirdropSettingsNotConfigured()
         }
@@ -59,8 +67,11 @@ export class WalletService implements WalletServiceInterface {
         const fromAccountAddress = await this.getDefaultAccountAddress(client, fromAccountCredentials.privateKey);
 
         for(let walletAddress of walletsWithLowBalance) {
+
             this.logger.log(`Wallet ${walletAddress} below threshold. Airdropping from ${fromAccountAddress}`);
+        
             await this.sendAirdrop(fromAccountAddress,walletAddress,client,fromAccountCredentials, airdropConfig);
+
         }
     }
 
@@ -83,14 +94,34 @@ export class WalletService implements WalletServiceInterface {
         return walletsWithLowBalance;
     }
     
-    async sendAirdrop(fromAccountAddress:string,toAccountAddress:string, client: EVMClient, fromAccountCredentials: PrivateKeyCredentials, airdropConfig: EVMAirdropConfiguration): Promise<TransactionReceiptDto>{
-        return await client.sendTransaction({
+    async sendAirdrop(fromAccountAddress:string,toAccountAddress:string, client: EVMClient, fromAccountCredentials: PrivateKeyCredentials, airdropConfig: EVMAirdropConfiguration): Promise<TransactionReceiptDto & { error?:string }>{
+        const transactionToBeExecuted = {
             to: toAccountAddress,
             from: fromAccountAddress,
             value: Web3.utils.toWei(airdropConfig.airdropAmount, airdropConfig.units as any),
             gas: 21000,
             gasPrice: Web3.utils.toWei("50", "gwei"),
-        }, fromAccountCredentials)
+        };
+
+        try {
+
+            const airdropTransaction = await client.sendTransaction(transactionToBeExecuted, fromAccountCredentials);
+            
+            const airdropTransactionEntity = AirdropTransactionEntityFactory.createEntityFromAirdropTransactionReceipt(airdropTransaction, null);
+            await this.airdropTransactionRepository.create(airdropTransactionEntity);
+
+            return airdropTransaction;
+
+        } catch(e){
+
+            this.logger.error(`Error while performing transaction ${JSON.stringify(transactionToBeExecuted) }: ${inspect(e)}`);
+            const errorAirdropTransaction = new TransactionReceiptDto('', transactionToBeExecuted.from, transactionToBeExecuted.to, transactionToBeExecuted.gas.toString(), transactionToBeExecuted.gasPrice,transactionToBeExecuted.value);
+            const airdropTransactionEntity = AirdropTransactionEntityFactory.createEntityFromAirdropTransactionReceipt(errorAirdropTransaction, e);
+            await this.airdropTransactionRepository.create(airdropTransactionEntity);
+            
+            throw e;
+
+        }
     }
 
 }

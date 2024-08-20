@@ -28,6 +28,6 @@ export class Web3HttpClient implements EVMClient {
         const signedTx = await this.client.eth.accounts.signTransaction(transaction, credentials.privateKey);
         const receipt = await this.client.eth.sendSignedTransaction(signedTx.rawTransaction);
         this.logger.log(`Airdrop of value ${transaction.value} is sent to ${transaction.to} from ${transaction.from}. \nReceipt: ${receipt.transactionHash}`);
-        return new TransactionReceiptDto(receipt.transactionHash.toString());
+        return new TransactionReceiptDto(receipt.transactionHash.toString(),receipt.from,receipt.to,receipt.cumulativeGasUsed.toString(),receipt.effectiveGasPrice.toString() ?? transaction.gasPrice,transaction.value);
     }
 }

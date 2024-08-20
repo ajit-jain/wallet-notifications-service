@@ -10,6 +10,9 @@ import { EVMChainAirdropSettingsNotConfigured, EVMChainUrlNotConfigured } from '
 import e from 'express';
 import { TransactionReceiptDto } from './../../../integrations/evms/clients/dtos/transaction-receipt.type';
 import { PrivateKeyCredentials } from './../../../integrations/evms/types/evm.crendentions.type';
+import { AirdropTransactionRepositoryInterface } from '../repositories/airdrop-transaction.repository.interface';
+import { AIRDROP_TRANSACTION_REPOSITORY_TOKEN } from '../constants/wallet.constants';
+import { AirdropTransactionRepositoryMock } from './../../../../test/mocks/repositories/airdrop-transaction.repository';
 
 jest.mock('./../../../integrations/evms/clients/web3.client',() => {
   return {
@@ -19,6 +22,7 @@ jest.mock('./../../../integrations/evms/clients/web3.client',() => {
 
 describe('WalletService', () => {
   let walletService: WalletService;
+  let airdropTransactionRepository: jest.Mocked<AirdropTransactionRepositoryInterface>;
   // Mock values for the config
   const mockWalletConfig: ConfigType<typeof walletConfig> = {
     defaultWalletPrivatekey: "TEST-KEY",
@@ -38,6 +42,7 @@ describe('WalletService', () => {
     },
   };
 
+
   beforeEach(async () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
       providers: [
@@ -50,10 +55,15 @@ describe('WalletService', () => {
           provide: airdropConfig.KEY,
           useValue: mockAirdropConfig,
         },
+        {
+          provide: AIRDROP_TRANSACTION_REPOSITORY_TOKEN,
+          useValue: AirdropTransactionRepositoryMock()
+        }
       ],
     }).compile();
 
     walletService = moduleRef.get<WalletService>(WalletService);
+    airdropTransactionRepository = moduleRef.get<jest.Mocked<AirdropTransactionRepositoryInterface>>(AIRDROP_TRANSACTION_REPOSITORY_TOKEN);
   });
 
   it('should be defined', () => {
@@ -98,7 +108,6 @@ describe('WalletService', () => {
       };
 
       const updateWalletIfBalanceIsLowSpy = jest.spyOn(walletService, 'updateWalletIfBalanceIsLow').mockResolvedValueOnce(undefined);
-
       
       await walletService.fundEligibleWalletByAirdrop(walletUpdates);
       
@@ -233,7 +242,7 @@ describe('WalletService', () => {
   describe('sendAirdrop', ()=>{
 
     it('return transaction on successful transaction', async ()=> {
-      const transactionReceiptDto = new TransactionReceiptDto("0xhdhddhd");
+      const transactionReceiptDto = new TransactionReceiptDto("0xhdhddhd", 'fromAddress', 'toAddress', '21000', '50000', '0.0001');
       const client = new Web3HttpClient('mockUrl');
       jest.spyOn(client, 'sendTransaction').mockResolvedValueOnce(transactionReceiptDto);
       const result = await walletService.sendAirdrop('defaultAddress', 'testAddress', client, new PrivateKeyCredentials(mockWalletConfig.defaultWalletPrivatekey), mockAirdropConfig[EVM_CHAINS.BASE_MAINNET]);
@@ -242,12 +251,11 @@ describe('WalletService', () => {
 
     it('return transaction on successful transaction', async ()=> {
       const error = new Error('Something went wrong');
-      const transactionReceiptDto = new TransactionReceiptDto("0xhdhddhd");
       const client = new Web3HttpClient('mockUrl');
       jest.spyOn(client, 'sendTransaction').mockRejectedValueOnce(error);
       await expect(walletService.sendAirdrop('defaultAddress', 'testAddress', client, new PrivateKeyCredentials(mockWalletConfig.defaultWalletPrivatekey), mockAirdropConfig[EVM_CHAINS.BASE_MAINNET])).rejects.toThrow(error);
     });
-  })
+  });
 
 
 });

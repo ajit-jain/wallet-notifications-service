@@ -4,11 +4,12 @@ import { IntegrationsModule } from './../../../integrations/integrations.module'
 import { ConfigModule } from '@nestjs/config';
 import walletConfig from '../config/wallet.config';
 import airdropConfig from '../config/airdrop.config';
-import { WALLET_SERVICE_TOKEN } from '../constants/wallet.constants';
+import { AIRDROP_TRANSACTION_REPOSITORY_TOKEN, WALLET_SERVICE_TOKEN } from '../constants/wallet.constants';
 import { WalletServiceMock } from './../../../../test/mocks/services/wallet.service.mock';
 import { WalletServiceInterface } from '../services/wallet.service.interface';
 import * as request from 'supertest';
 import { HttpStatus, INestApplication } from '@nestjs/common';
+import { AirdropTransactionRepositoryMock } from './../../../../test/mocks/repositories/airdrop-transaction.repository';
 
 describe('WebhooksController', () => {
   let webhooksController: WebhooksController;
@@ -26,10 +27,16 @@ describe('WebhooksController', () => {
         ConfigModule.forFeature(walletConfig),
         ConfigModule.forFeature(airdropConfig)],
       controllers: [WebhooksController],
-      providers: [{
-        provide: WALLET_SERVICE_TOKEN,
-        useValue: WalletServiceMock()
-      }]
+      providers: [
+        {
+          provide: WALLET_SERVICE_TOKEN,
+          useValue: WalletServiceMock()
+        },
+        {
+          provide: AIRDROP_TRANSACTION_REPOSITORY_TOKEN,
+          useValue: AirdropTransactionRepositoryMock()
+        }
+      ]
     }).compile();
 
     webhooksController = module.get<WebhooksController>(WebhooksController);

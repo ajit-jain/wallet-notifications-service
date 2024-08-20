@@ -2,25 +2,10 @@
 
 The wallet notifications service subscribes to open wallet transactions for specific users and processes those events, triggering airdrops if users have low balances.
 
-## Installation
-
-```bash
-$ npm install
-```
-
-## Running the app
+## Prerequisites
 Make sure that `.env` file is added. It will have all the configurations to run the application. Copy contents for .env.example file and replace with your credentials.
 
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-```
-
 ## Running containerised app
-
 Make sure docker and docker-compose installed on your server. 
 
 Build docker images by running
@@ -30,14 +15,53 @@ $ make init
 
 Start the containers
 ```shell
-$ make start
+$ make start  // Server will start at http://localhost:3000/
 ```
+After running the `make start`, run db migrate command in a new terminal. It will initialise the db with entities. 
+```shell
+$ make migrate
+```
+**Note:** Server should be in running state while running this command.
+
+## Other commands
+To generate and create migrations, run:
+
+```shell
+$ make generate-migration
+```
+
+To revert a migration, run: 
+```shell
+$ make migrate-down
+```
+
 Stop the containers
 ```shell
 $ make stop
 ```
 
-Server will start at http://localhost:3000/
+
+## Running the app without containerization
+Make sure you have postgres db installed in the system. 
+
+```bash
+$ npm install
+```
+
+```bash
+# development
+$ npm run start
+
+# watch mode
+$ npm run start:dev // Server will start at http://localhost:3000/
+```
+
+After running the `npm run start:dev`, run db migrate command in a new terminal. It will initialise the db with entities. 
+```shell
+$ npm run typeorm migration:run
+```
+**Note:** Server should be in running state while running this command.
+
 
 ## Test
 
