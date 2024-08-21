@@ -12,4 +12,5 @@ export interface EVMClient {
   ): Promise<TransactionReceiptDto>;
   convertAmountToWeiUnits(amount: string, units: string): string;
   convertAmountFromWeiUnits(amount: string, units: string): string;
+  calculateGasPrice(): Promise<string>;
 }

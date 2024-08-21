@@ -54,4 +54,10 @@ export class Web3HttpClient implements EVMClient {
       receipt.effectiveGasPrice.toString() ?? transaction.gasPrice,
     );
   }
+
+  async calculateGasPrice(): Promise<string> {
+    const gasPrice = await this.client.eth.getGasPrice();
+    this.logger.log(`Gas price for the current network: ${gasPrice}`);
+    return gasPrice.toString();
+  }
 }

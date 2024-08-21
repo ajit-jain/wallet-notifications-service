@@ -7,6 +7,7 @@ export const EVMClientMock = (): jest.Mocked<EVMClient> => {
     sendTransaction: jest.fn(),
     convertAmountToWeiUnits: jest.fn(),
     convertAmountFromWeiUnits: jest.fn(),
+    calculateGasPrice: jest.fn(),
     // Add other methods that need to be mocked
   } as unknown as jest.Mocked<EVMClient>;
 };

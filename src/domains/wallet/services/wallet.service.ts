@@ -165,7 +165,7 @@ export class WalletService implements WalletServiceInterface {
         airdropConfig.units as any,
       ),
       gas: 21000,
-      gasPrice: client.convertAmountToWeiUnits('50', 'gwei'),
+      gasPrice: await client.calculateGasPrice(),
     };
 
     try {
